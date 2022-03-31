@@ -13,6 +13,8 @@
 
 #include "port_platform.h"
 #include "deca_device_api.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 /****************************************************************************//**
  *
@@ -199,7 +201,7 @@ void reset_DW1000(void)
   //nrf_gpio_pin_set(DW1000_RST);  
   //nrf_delay_ms(50); 
   nrf_gpio_cfg_input(DW1000_RST, NRF_GPIO_PIN_NOPULL); 
-  nrf_delay_ms(2); 
+  deca_sleep(2); 
 }
 
 /* @fn      port_set_dw1000_slowrate
@@ -215,7 +217,7 @@ void port_set_dw1000_slowrate(void)
 	spi_config.ss_pin = SPI_CS_PIN;
 	APP_ERROR_CHECK( nrf_drv_spi_init(&spi, &spi_config, spi_event_handler, NULL) );
   spi_initialised = true;
-	nrf_delay_ms(2);
+	deca_sleep(2);
 }
 
 /* @fn      port_set_dw1000_fastrate
@@ -231,13 +233,17 @@ void port_set_dw1000_fastrate(void)
 	spi_config.ss_pin = SPI_CS_PIN;
 	APP_ERROR_CHECK( nrf_drv_spi_init(&spi, &spi_config, spi_event_handler,NULL) );
   spi_initialised = true;
-	nrf_delay_ms(2);	
+	deca_sleep(2);	
 }
 
 
 void deca_sleep(unsigned int time_ms)
 {
-    nrf_delay_ms(time_ms);
+#if defined(FREERTOS)
+  vTaskDelay(pdMS_TO_TICKS(time_ms));
+#else
+  nrf_delay_ms(time_ms);
+#endif
 }
 
 
